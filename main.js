@@ -127,10 +127,60 @@ document.getElementById('equipCarousel').addEventListener('mouseleave', () => {
 })();
 
 /* ── FORM SUBMIT ── */
-function handleSubmit(e) {
+async function handleSubmit(e) {
   e.preventDefault();
-  const form = document.getElementById('contactForm');
-  const success = document.getElementById('formSuccess');
-  form.style.display = 'none';
-  success.style.display = 'block';
+
+  const btn = e.target.querySelector('.form-submit');
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Enviando...`;
+
+  const PORTAL_ID = "50951167";
+  const FORM_ID   = "098cb86d-732c-44b7-869c-4df7ab498aee";
+  const HUBSPOT_URL = `https://api.hsforms.com/submissions/v3/integration/submit/${PORTAL_ID}/${FORM_ID}`;
+
+  const data = Object.fromEntries(new FormData(e.target).entries());
+
+  const requestBody = {
+    fields: [
+      { name: "firstname", value: data.nombre },
+      { name: "lastname",  value: data.apellido },
+      { name: "email",     value: data.email },
+      { name: "phone",     value: `${data.codarea} ${data.telefono}` }
+    ],
+    context: {
+      pageUri:  window.location.href,
+      pageName: document.title
+    }
+  };
+
+  try {
+    const response = await fetch(HUBSPOT_URL, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(requestBody)
+    });
+
+    if (response.ok) {
+      window.location.href = 'gracias.html';
+    } else {
+      console.error("Error HubSpot:", response.status);
+      showFormError(btn, originalText, "❌ Hubo un error al enviar tus datos. Intentá nuevamente.");
+    }
+  } catch (error) {
+    console.error("Error de conexión:", error);
+    showFormError(btn, originalText, "❌ No se pudo conectar con el servidor.");
+  }
+}
+
+function showFormError(btn, originalText, msg) {
+  btn.disabled = false;
+  btn.innerHTML = originalText;
+  const existing = document.getElementById('formError');
+  if (existing) existing.remove();
+  const p = document.createElement('p');
+  p.id = 'formError';
+  p.style.cssText = 'color:#ef4444;font-size:.85rem;text-align:center;margin-top:10px;';
+  p.textContent = msg;
+  btn.parentNode.insertBefore(p, btn.nextSibling);
 }
