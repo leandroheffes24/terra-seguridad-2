@@ -44,6 +44,15 @@ body {
   border-bottom: 1px solid var(--gray-200);
   transition: box-shadow .3s;
 }
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.nav-logo-extra {
+  height: 44px;
+  width: auto;
+}
 .nav.scrolled { box-shadow: 0 4px 20px rgba(1,98,202,.1); }
 .nav-inner {
   max-width: 1180px; margin: 0 auto; padding: 0 24px;
